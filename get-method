@@ -1,0 +1,88 @@
+import {Component, OnInit, Injectable} from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import {Http, Response} from '@angular/http';
+import {Observable} from "rxjs";
+
+
+@Injectable()
+export class OombaDataService {
+
+  constructor(private http: Http) {}
+  private usersUrl = 'http://swapi.co/api/people/';
+  // private usersUrl = 'https://httpbin.org/get';
+
+  getData() {
+    return this.http.get(this.usersUrl)
+      .map(this.extractData)
+  }
+
+  private extractData(res: Response) {
+    return res.json();
+  }
+
+  private handleError (error: any) {
+    let errMsg = (error.message) ? error.message :
+      error.status ? `${error.status} - ${error.statusText}` : 'Server error';
+    console.error(errMsg); // log to console instead
+    return Observable.throw(errMsg);
+  }
+}
+
+@Component({
+  selector: 'upload',
+  template: `
+    <h1>Select Master Data Component</h1>
+    <table border="1">
+        <thead>
+            <th>Name</th>
+            <th>ID</th>
+            <th>Films</th>
+        </thead>
+        <tr *ngFor = "let result of results">
+            <td>{{result.name}}</td>
+            <td>{{result.height}}</td>
+            <td >
+            <table>
+                <tr *ngFor="let film of result.films">
+                    <td>{{film}}</td>
+</tr>
+</table>
+</td>
+            
+        </tr>
+        
+        
+    </table>
+`,
+  providers: [OombaDataService]
+})
+export class UploadComponent implements OnInit {
+
+  results: string[];
+
+  // results: [{
+  //   name: string,
+  //   birth_year: string
+  // }];
+
+  constructor(public route: ActivatedRoute, oombaDataService: OombaDataService) {
+    console.log('Hello Upload Component 2');
+    oombaDataService.getData().subscribe(
+      x => {
+        console.log("VALUE RECEIVED: ", x);
+        console.log("Count: ", x.count);
+        this.results = x.results;
+      },
+      x => {
+        console.log("ERROR: ", x);
+      },
+      () => {
+        console.log("Completed");
+      }
+    );
+  }
+  public ngOnInit(){
+    console.log('Hello Upload Component');
+
+  }
+}
